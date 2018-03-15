@@ -12,7 +12,7 @@ class AVBTreeNode(object):
         self.leaf = leaf
 
     def __repr__(self):
-        return "{0}\tLeaf:{1}".format(self.keys, self.leaf)
+        return "{0}".format(self.keys)
 
     def get_key(self, value):
         for key in self.keys:
@@ -20,28 +20,22 @@ class AVBTreeNode(object):
                 return key
 
     def add_key(self, AVBTree, value, count=1):
-        if self.keys:
-            i = 0
-            length = len(self.keys)
-            while i < length and self.keys[i].value < value:
-                i += 1
-            self.keys.insert(i, Key(value=value, count=count))
-        else:
-            self.keys.insert(0, Key(value=value, count=count))
+        i = 0
+        length = len(self.keys)
+        while i < length and self.keys[i].value < value:
+            i += 1
+        self.keys.insert(i, Key(value=value, count=count))
 
-        # if leaf is full split it
+        # if node is full split it
         if self.is_full:
             self.split(AVBTree)
 
     def add_child(self, child):
-        if self.childs:
-            i = 0
-            length = len(self.childs)
-            while i < length and self.childs[i].keys[0] < child.keys[0]:
-                i += 1
-            self.childs.insert(i, child)
-        else:
-            self.childs.insert(0, child)
+        i = 0
+        length = len(self.childs)
+        while i < length and self.childs[i].keys[0] < child.keys[0]:
+            i += 1
+        self.childs.insert(i, child)
 
     def split(self, AVBTree):
         rightmost_key = self.keys.pop()
@@ -117,6 +111,7 @@ class AVBTree(object):
         if key:
             key.count += 1
             return
+
         # if no, add key to that leaf
         current_node.add_key(self, value)
 
