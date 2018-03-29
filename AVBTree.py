@@ -1,7 +1,7 @@
 from recordclass import recordclass
+from Sensor import Sensor
 
-
-Key = recordclass('Key', 'value count')
+# Key = recordclass('Key', 'value count')
 
 
 class AVBTreeNode(object):
@@ -24,7 +24,7 @@ class AVBTreeNode(object):
         length = len(self.keys)
         while i < length and self.keys[i].value < value:
             i += 1
-        self.keys.insert(i, Key(value=value, count=count))
+        self.keys.insert(i, Sensor(value=value, count=count))
 
         # if node is full split it
         if self.is_full:
@@ -87,10 +87,13 @@ class AVBTreeNode(object):
 
 
 class AVBTree(object):
-    def __init__(self):
+    def __init__(self, param=""):
         self.root = AVBTreeNode()
+        self.param = param
 
     def insert(self, value):
+        if value is None:
+            return
         current_node = self.root
 
         # if key is present in that leaf increment counter
@@ -130,6 +133,10 @@ class AVBTree(object):
 
         key = current_node.get_key(value)
         return key
+
+    def traverse(self):
+        if self.root:
+            self.root.childs[0].traverse()
 
     def print(self):
         """Print an level-order representation."""

@@ -55,6 +55,7 @@ class DatabaseConnection(TestCase):
             tree.insert(values[i])
         self.assertEqual(tree.search(101), None)
 
+
 if __name__ == '__main__':
     main()
 

@@ -11,6 +11,46 @@ class DatabaseConnector:
                                          r'Trusted_Connection=yes')
         self.cursor = self.connection.cursor()
 
+    def select_fk(self, table):
+        sql_statement = '''SELECT
+                            COL_NAME(fc.parent_object_id,
+                            fc.parent_column_id) AS ColumnName
+                            FROM sys.foreign_keys AS f
+                            LEFT JOIN sys.foreign_key_columns AS fc
+                            ON f.OBJECT_ID = fc.constraint_object_id
+                            WHERE OBJECT_NAME(fc.parent_object_id) = '{0}';'''.format(table)
+        self.cursor.execute(sql_statement)
+        fk = [x.ColumnName for x in self.cursor.fetchall()]
+        return fk
+
+    def select_pk(self, table):
+        sql_statement = '''SELECT COLUMN_NAME
+                        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+                        WHERE OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') = 1
+                        AND TABLE_NAME = '{0}' '''.format(table)
+
+        self.cursor.execute(sql_statement)
+        pk = [x.COLUMN_NAME for x in self.cursor.fetchall()]
+        return pk
+
+    # def get_columns(self, table, type):
+    #     if type == 'pk':
+    #         sql_statement = '''SELECT COLUMN_NAME
+    #                                 FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+    #                                 WHERE OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') = 1
+    #                                 AND TABLE_NAME = '{0}' '''.format(table)
+    #     elif type == 'fk':
+    #         sql_statement = '''SELECT
+    #                                     COL_NAME(fc.parent_object_id,
+    #                                     fc.parent_column_id) AS ColumnName
+    #                                     FROM sys.foreign_keys AS f
+    #                                     LEFT JOIN sys.foreign_key_columns AS fc
+    #                                     ON f.OBJECT_ID = fc.constraint_object_id
+    #                                     WHERE OBJECT_NAME(fc.parent_object_id) = '{0}';'''.format(table)
+    #     elif type == 'normal':
+    #         sql_statement = '''
+    #                         SELECT CONSTRAINT_COLUMN_USAGE from INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE WHERE TABLE_NAME = '{0}';'''.format(table)
+
     def get_tables_without_fk(self):
         """This function returns list of all tables names which don't have fk."""
         sql_statement = '''SELECT tbl.name
@@ -58,6 +98,7 @@ class DatabaseConnector:
         return columns
 
     def get_number_of_all_tables(self):
+        """This functions returns number of all tables in the database."""
         sql_statement = "SELECT COUNT(tbl.name) FROM sys.tables AS tbl"
         self.cursor.execute(sql_statement)
         return self.cursor.fetchone()[0]
