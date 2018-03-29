@@ -1,8 +1,9 @@
 from AVBTree import AVBTree
 from Database_connection import DatabaseConnector
+from Sensor import Sensor
 
 sensory_input_fields = {}
-db = DatabaseConnector('5CG6383BLC\MATEUSZ', 'AdventureWorks2012')
+db = DatabaseConnector('5CG6383BLC\MATEUSZ', 'Studenci')
 tb = db.get_tables_without_fk()
 for table in tb:
     all_columns = db.get_table_columns(table)
@@ -15,12 +16,14 @@ for table in tb:
 
     for row in db.fetch_data_from_table(table):
         for column in no_pk_fk_columns:
-            sensory_input_fields[column].insert(row.__getattribute__(column))
-
-
-
-
-
+            value = row.__getattribute__(column)
+            if value is None:
+                continue
+            sensor = Sensor(value)
+            sensory_input_fields[column].insert(sensor)
+            #TODO
+            #podmienić tak, żeby sensor wskazywał na obiekt który już istnieje jeśli już istnieje
 
     for column in no_pk_fk_columns:
         sensory_input_fields[column].print()
+        print('-'*30)

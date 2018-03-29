@@ -7,9 +7,9 @@
 
 
 class Sensor(object):
-    def __init__(self, value, count):
+    def __init__(self, value):
         self.value = value
-        self.count = count
+        self.count = 1
         self.connections = {}
 
     def __lt__(self, other):

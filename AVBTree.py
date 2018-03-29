@@ -1,6 +1,6 @@
 from recordclass import recordclass
 from Sensor import Sensor
-
+import ctypes
 # Key = recordclass('Key', 'value count')
 
 
@@ -19,12 +19,12 @@ class AVBTreeNode(object):
             if key.value == value:
                 return key
 
-    def add_key(self, AVBTree, value, count=1):
+    def add_key(self, AVBTree, obj):
         i = 0
         length = len(self.keys)
-        while i < length and self.keys[i].value < value:
+        while i < length and self.keys[i].value < obj.value:
             i += 1
-        self.keys.insert(i, Sensor(value=value, count=count))
+        self.keys.insert(i, obj)
 
         # if node is full split it
         if self.is_full:
@@ -40,7 +40,7 @@ class AVBTreeNode(object):
     def split(self, AVBTree):
         rightmost_key = self.keys.pop()
         new_leaf = AVBTreeNode()
-        new_leaf.add_key(AVBTree, rightmost_key.value, rightmost_key.count)
+        new_leaf.add_key(AVBTree, rightmost_key)
 
         if self.childs:
             new_leaf.childs = self.childs[2:]
@@ -56,10 +56,10 @@ class AVBTreeNode(object):
         if self.parent:
             self.parent.add_child(new_leaf)
             new_leaf.parent = self.parent
-            self.parent.add_key(AVBTree, middle_key.value, middle_key.count)
+            self.parent.add_key(AVBTree, middle_key)
         else:
             new_root = AVBTreeNode(leaf=False)
-            new_root.add_key(AVBTree, middle_key.value, middle_key.count)
+            new_root.add_key(AVBTree, middle_key)
             self.parent = new_root
             new_leaf.parent = new_root
             self.parent.add_child(self)
@@ -91,32 +91,34 @@ class AVBTree(object):
         self.root = AVBTreeNode()
         self.param = param
 
-    def insert(self, value):
-        if value is None:
+    def insert(self, obj):
+        if obj.value is None:
             return
         current_node = self.root
 
         # if key is present in that leaf increment counter
         while not current_node.leaf:
-            key = current_node.get_key(value)
+            key = current_node.get_key(obj.value)
             if key:
+                obj = key
                 key.count += 1
                 return
-            if value < current_node.leftmost:
+            if obj.value < current_node.leftmost:
                 current_node = current_node.get_left_child()
-            elif value > current_node.rightmost:
+            elif obj.value > current_node.rightmost:
                 current_node = current_node.get_right_child()
             else:
                 current_node = current_node.childs[1]
 
         # if key is present in that leaf increment counter
-        key = current_node.get_key(value)
+        key = current_node.get_key(obj.value)
         if key:
+            obj = key
             key.count += 1
             return
 
         # if no, add key to that leaf
-        current_node.add_key(self, value)
+        current_node.add_key(self, obj)
 
     def search(self, value):
         current_node = self.root

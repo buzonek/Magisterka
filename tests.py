@@ -1,7 +1,9 @@
 from unittest import TestCase, main
 from Database_connection import DatabaseConnector
 from AVBTree import AVBTree
+from recordclass import recordclass
 
+Key = recordclass('Key', 'value count')
 
 class DatabaseConnection(TestCase):
     def test_getting_tables_northwind(self):
@@ -23,7 +25,7 @@ class DatabaseConnection(TestCase):
                   'Nina', 'Tom', 'Tom', 'Emy', 'Lisa', 'Paula']
         tree = AVBTree()
         for value in values[:]:
-            tree.insert(value)
+            tree.insert(Key(value=value, count=1))
         for value in values[:]:
             self.assertEqual(tree.search(value).value, value)
 
@@ -32,7 +34,7 @@ class DatabaseConnection(TestCase):
                   'Nina', 'Tom', 'Tom', 'Emy', 'Lisa', 'Paula']
         tree = AVBTree()
         for value in values[:]:
-            tree.insert(value)
+            tree.insert(Key(value=value, count=1))
         for value in values[:]:
             self.assertNotEqual(tree.search('Mateusz'), value)
 
@@ -42,7 +44,7 @@ class DatabaseConnection(TestCase):
         tree = AVBTree()
         for i in range(100):
             values.append(random.randint(0, 100000))
-            tree.insert(values[i])
+            tree.insert(Key(value=values[i], count=1))
         for value in values:
             self.assertEqual(tree.search(value).value, value)
 
@@ -52,7 +54,7 @@ class DatabaseConnection(TestCase):
         tree = AVBTree()
         for i in range(200):
             values.append(random.randint(0, 100))
-            tree.insert(values[i])
+            tree.insert(Key(value=values[i], count=1))
         self.assertEqual(tree.search(101), None)
 
 
