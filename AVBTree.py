@@ -100,9 +100,8 @@ class AVBTree(object):
         while not current_node.leaf:
             key = current_node.get_key(obj.value)
             if key:
-                obj = key
                 key.count += 1
-                return
+                return key
             if obj.value < current_node.leftmost:
                 current_node = current_node.get_left_child()
             elif obj.value > current_node.rightmost:
@@ -113,12 +112,12 @@ class AVBTree(object):
         # if key is present in that leaf increment counter
         key = current_node.get_key(obj.value)
         if key:
-            obj = key
             key.count += 1
-            return
+            return key
 
         # if no, add key to that leaf
         current_node.add_key(self, obj)
+        return obj
 
     def search(self, value):
         current_node = self.root
@@ -134,11 +133,12 @@ class AVBTree(object):
                 current_node = current_node.childs[1]
 
         key = current_node.get_key(value)
+        if not key:
+            print("Value {0} not found!".format(value))
         return key
 
     def traverse(self):
-        if self.root:
-            self.root.childs[0].traverse()
+        pass
 
     def print(self):
         """Print an level-order representation."""

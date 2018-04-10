@@ -1,35 +1,12 @@
-# from AVBTree import AVBTree
-#
-#
-# class SensoryInputField(object):
-#     def __init__(self):
-#         self.avb_tree = AVBTree()
+from ValueNeuron import NeuralBaseClass
 
 
-class Sensor(object):
+class Sensor(NeuralBaseClass):
     def __init__(self, value):
-        self.value = value
+        super().__init__(value)
         self.count = 1
-        self.connections = {}
-
-    def __lt__(self, other):
-        return self.value < other.value
-
-    def __le__(self, other):
-        return self.value <= other.value
-
-    def __eq__(self, other):
-        return self.value == other.value
-
-    def __ne__(self, other):
-        return self.value != other.value
-
-    def __gt__(self, other):
-        return self.value > other.value
-
-    def __ge__(self, other):
-        return self.value >= other.value
+        self.value_neuron = None
 
     def __repr__(self):
-        return "<{0}|{1}>".format(self.value, self.count)
+        return "Sensor({0})".format(self.value)
 
