@@ -19,7 +19,7 @@ class DatabaseConnector:
                                          r'Trusted_Connection=yes')
         self.cursor = self.connection.cursor()
 
-    def create_table(self, name):
+    def get_tb_detail(self, name):
         tb = Table(name)
         tb.pk = self.select_pk(tb.name)
         tb.fk = self.select_fk(tb.name)
@@ -58,7 +58,7 @@ class DatabaseConnector:
             ON tbl.object_id = fKey.parent_object_id
         WHERE fKey.parent_object_id IS NULL'''
         self.cursor.execute(sql_statement)
-        tables = [self.create_table(record.name) for record in self.cursor.fetchall()]
+        tables = [self.get_tb_detail(record.name) for record in self.cursor.fetchall()]
         return tables
 
     def get_tables_with_one_fk(self):
@@ -68,7 +68,7 @@ class DatabaseConnector:
         self.cursor.execute(sql_statement)
         all_tables = [x.TABLE_NAME for x in self.cursor.fetchall()]
         tables_names = [x for x in all_tables if all_tables.count(x) == 1]
-        tables = [self.create_table(name) for name in tables_names]
+        tables = [self.get_tb_detail(name) for name in tables_names]
         return tables
 
     def get_tables_with_many_fk(self):
@@ -78,7 +78,7 @@ class DatabaseConnector:
         self.cursor.execute(sql_statement)
         all_tables = [x.TABLE_NAME for x in self.cursor.fetchall()]
         tables_names = set([x for x in all_tables if all_tables.count(x) > 1])
-        tables = [self.create_table(name) for name in tables_names]
+        tables = [self.get_tb_detail(name) for name in tables_names]
         return tables
 
     def fetch_data_from_table(self, table_name):

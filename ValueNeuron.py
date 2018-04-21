@@ -13,15 +13,22 @@ class NeuralBaseClass(object):
     def __eq__(self, other):
         return self.value == other.value
 
+    def connect(self, neuron):
+        self.connections[neuron.value] = neuron
+        neuron.connections[self.value] = self
+
 
 class ValueNeuron(NeuralBaseClass):
     def __init__(self, value):
         super().__init__(value)
+        self.sensor = None
+        self.prev = None
+        self.next = None
 
     def __repr__(self):
-        return "ValueNeuron({0})".format(self.value)
+        return "ValueNeuron({0})".format(self.value, self.connections)
 
 
-class IDNeuron(NeuralBaseClass):
+class ObjectNeuron(NeuralBaseClass):
     def __repr__(self):
-        return "IDNeuron({0})".format(self.value)
+        return "ObjectNeuron({0})".format(self.value)
