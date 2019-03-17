@@ -1,20 +1,21 @@
 from unittest import TestCase, main
-from Database_connection import DatabaseConnector
+from Database_connection import Database
 from AVBTree import AVBTree
 from recordclass import recordclass
 
 Key = recordclass('Key', 'value count')
 
+
 class DatabaseConnection(TestCase):
     def test_getting_tables_northwind(self):
-        connection = DatabaseConnector('5CG6383BLC\MATEUSZ', 'Northwind')
+        connection = Database('5CG6383BLC\MATEUSZ', 'Northwind')
         tb_no_fk = connection.get_tables_without_fk()
         tb_one_fk = connection.get_tables_with_one_fk()
         tb_many_fk = connection.get_tables_with_many_fk()
         self.assertEqual(connection.get_number_of_all_tables(), len(tb_no_fk)+len(tb_many_fk)+len(tb_one_fk))
 
     def test_getting_tables_adventure(self):
-        connection = DatabaseConnector('5CG6383BLC\MATEUSZ', 'AdventureWorks2012')
+        connection = Database('5CG6383BLC\MATEUSZ', 'AdventureWorks2012')
         tb_no_fk = connection.get_tables_without_fk()
         tb_one_fk = connection.get_tables_with_one_fk()
         tb_many_fk = connection.get_tables_with_many_fk()

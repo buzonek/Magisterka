@@ -1,16 +1,13 @@
-from recordclass import recordclass
 from Sensor import Sensor
 from ValueNeuron import ValueNeuron
-import ctypes
-# Key = recordclass('Key', 'value count')
 
 
 class AVBTreeNode(object):
-    def __init__(self, leaf=True):
+    def __init__(self, is_leaf=True):
         self.keys = []
         self.childs = []
         self.parent = None
-        self.leaf = leaf
+        self.leaf = is_leaf
 
     def __repr__(self):
         return "{0}".format(self.keys)
@@ -24,51 +21,72 @@ class AVBTreeNode(object):
                 return key
 
     def add_key(self, AVBTree, obj, split=False):
-        i = 0
+        if not hasattr(obj, 'value'):
+            raise ValueError('AVBTree node has to contain value property!')
+        print("Inserting {0} to the tree...".format(obj))
+        index = 0
         length = len(self.keys)
-        while i < length and self.keys[i].value < obj.value:
-            i += 1
-        if not split:
-            if type(obj.value) in [int, float]:
-                if length == 2:
-                    if i == 0:
-                        obj.next = self.keys[0]
-                        obj.prev = self.keys[0].prev
-                        if self.keys[0].prev:
-                            self.keys[0].prev.next = obj
-                        self.keys[0].prev = obj
-                    elif i == 1:
-                        obj.next = self.keys[1]
-                        obj.prev = self.keys[0]
-                        self.keys[1].prev = obj
-                        self.keys[0].next = obj
-                    else:
-                        obj.next = self.keys[1].next
-                        obj.prev = self.keys[1]
-                        if self.keys[1].next:
-                            self.keys[1].next.prev = obj
-                        self.keys[1].next = obj
-                elif length == 1:
-                    if i == 0:
-                        obj.next = self.keys[0]
-                        obj.prev = self.keys[0].prev
-                        if self.keys[0].prev:
-                            self.keys[0].prev.next = obj
-                        self.keys[0].prev = obj
+        while index < length and self.keys[index].value < obj.value:
+            index += 1
 
-                    elif i == 1:
-                        obj.next = self.keys[0].next
-                        obj.prev = self.keys[0]
-                        if self.keys[0].next:
-                            self.keys[0].next.prev = obj
-                        self.keys[0].next = obj
+        if split:
+            self.keys.insert(index, obj)
+
+            # if node is full split it
+            if self.is_full:
+                self.split(AVBTree)
+            return
+
+        # this is a part responsible for creating connections
+        if type(obj.value) in [int, float]:
+            old_range = AVBTree.range
+            print("Old range is:", old_range)
+            if length == 2:
+                if index == 0:
+                    obj.next = self.keys[0]
+                    obj.prev = self.keys[0].prev
+                    if self.keys[0].prev:
+                        self.keys[0].prev.next = obj
+                    self.keys[0].prev = obj
+                elif index == 1:
+                    obj.next = self.keys[1]
+                    obj.prev = self.keys[0]
+                    self.keys[1].prev = obj
+                    self.keys[0].next = obj
                 else:
-                    obj.prev = AVBTree.min
-                    AVBTree.min.next = obj
-                    obj.next = AVBTree.max
-                    AVBTree.max.prev = obj
+                    obj.next = self.keys[1].next
+                    obj.prev = self.keys[1]
+                    if self.keys[1].next:
+                        self.keys[1].next.prev = obj
+                    self.keys[1].next = obj
+            elif length == 1:
+                if index == 0:
+                    obj.next = self.keys[0]
+                    obj.prev = self.keys[0].prev
+                    if self.keys[0].prev:
+                        self.keys[0].prev.next = obj
+                    self.keys[0].prev = obj
 
-        self.keys.insert(i, obj)
+                elif index == 1:
+                    obj.next = self.keys[0].next
+                    obj.prev = self.keys[0]
+                    if self.keys[0].next:
+                        self.keys[0].next.prev = obj
+                    self.keys[0].next = obj
+
+            else:
+                obj.prev = AVBTree.min
+                AVBTree.min.next = obj
+                obj.next = AVBTree.max
+                AVBTree.max.prev = obj
+
+            # obj.next.calc_weights(AVBTree.range)
+            # obj.prev.calc_weights(AVBTree.range)
+            new_range = AVBTree.range
+            print("New range is:", new_range)
+            # range_updated = new_range == old_range
+            obj.calc_weights(new_range, new_range != old_range)
+        self.keys.insert(index, obj)
 
         # if node is full split it
         if self.is_full:
@@ -102,7 +120,7 @@ class AVBTreeNode(object):
             new_leaf.parent = self.parent
             self.parent.add_key(AVBTree, middle_key, split=True)
         else:
-            new_root = AVBTreeNode(leaf=False)
+            new_root = AVBTreeNode(is_leaf=False)
             new_root.add_key(AVBTree, middle_key, split=True)
             self.parent = new_root
             new_leaf.parent = new_root
@@ -143,8 +161,23 @@ class AVBTree(object):
         self.max.value_neuron = ValueNeuron("Max")
 
     @property
+    def range(self):
+        if self.max.prev and self.min.next:
+            return self.max.prev.value - self.min.next.value
+        else:
+            return 100000000
+
+    @property
     def is_numerical(self):
         return type(self.root.keys[0].value) in [int, float]
+
+    @property
+    def param_range(self):
+        if self.max.prev and self.min.next:
+            range = self.max.prev.value - self.min.next.value
+            return range
+        else:
+            return 10000000000
 
     def insert(self, obj):
         if obj.value is None:
@@ -173,6 +206,8 @@ class AVBTree(object):
 
         # if no, add key to that leaf
         current_node.add_key(self, obj)
+        obj.value_neuron = ValueNeuron(obj.value)
+        obj.value_neuron.sensor = obj
         return obj
 
     def search(self, value):
@@ -205,7 +240,6 @@ class AVBTree(object):
         print(output)
 
     def print(self):
-        """Print an level-order representation."""
         this_level = [self.root]
         while this_level:
             next_level = []
