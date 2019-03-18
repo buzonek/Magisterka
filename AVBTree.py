@@ -23,7 +23,7 @@ class AVBTreeNode(object):
     def add_key(self, AVBTree, obj, split=False):
         if not hasattr(obj, 'value'):
             raise ValueError('AVBTree node has to contain value property!')
-        print("Inserting {0} to the tree...".format(obj))
+        # print("Inserting {0} to the tree...".format(obj))
         index = 0
         length = len(self.keys)
         while index < length and self.keys[index].value < obj.value:
@@ -40,7 +40,7 @@ class AVBTreeNode(object):
         # this is a part responsible for creating connections
         if type(obj.value) in [int, float]:
             old_range = AVBTree.range
-            print("Old range is:", old_range)
+            # print("Old range is:", old_range)
             if length == 2:
                 if index == 0:
                     obj.next = self.keys[0]
@@ -83,7 +83,7 @@ class AVBTreeNode(object):
             # obj.next.calc_weights(AVBTree.range)
             # obj.prev.calc_weights(AVBTree.range)
             new_range = AVBTree.range
-            print("New range is:", new_range)
+            # print("New range is:", new_range)
             # range_updated = new_range == old_range
             obj.calc_weights(new_range, new_range != old_range)
         self.keys.insert(index, obj)
